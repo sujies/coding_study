@@ -1,0 +1,28 @@
+WITH RECURSIVE EXAMPLE AS (
+    SELECT 
+        ID,
+        PARENT_ID,
+        1 AS GENERATION
+    FROM ECOLI_DATA
+    WHERE PARENT_ID IS NULL -- 최상위 부모를 선택
+
+    UNION ALL
+
+    SELECT 
+        D.ID,
+        D.PARENT_ID,
+        E.GENERATION + 1
+    FROM ECOLI_DATA D
+    JOIN EXAMPLE E ON D.PARENT_ID = E.ID
+)
+
+-- 각 세대별로 자식이 없는 개체의 수를 집계
+SELECT 
+    COUNT(*) AS COUNT,
+    GENERATION
+FROM EXAMPLE E
+LEFT JOIN ECOLI_DATA D ON E.ID = D.PARENT_ID
+WHERE D.ID IS NULL -- 자식이 없는 개체 (Leaf Node)만 선택
+GROUP BY GENERATION
+ORDER BY GENERATION;
+
